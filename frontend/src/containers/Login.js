@@ -2,8 +2,11 @@ import React, { useState } from "react";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import "./Login.css";
+import { Auth } from "aws-amplify";
+import { useAppContext } from "../lib/contextLib";
 
 export default function Login() {
+    const { userHasAuthenticated } = useAppContext();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
@@ -11,8 +14,16 @@ export default function Login() {
         return email.length > 0 && password.length > 0;
     }
 
-    function handleSubmit(event) {
+    async function handleSubmit(event) {
         event.preventDefault();
+
+        try {
+            await Auth.signIn(email, password);
+            userHasAuthenticated(true);
+        } catch (e) {
+            console.log(e);
+            alert(e.message);
+        }
     }
 
     return (
@@ -35,7 +46,7 @@ export default function Login() {
                         onChange={(e) => setPassword(e.target.value)}
                     />
                 </Form.Group>
-                <Button block size="lg" type="submit" disabled={!validateForm()}>
+                <Button className="mt-2" block size="lg" type="submit" disabled={!validateForm()}>
                     Login
                 </Button>
             </Form>
